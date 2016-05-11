@@ -1,0 +1,6 @@
+name: uaa-to-gitlab
+buildpack: go_buildpack
+env:
+  UAA_URL: http://myuaa.api-cf.com
+  SKIP_INSECURE: false # set to true if you don't want to verify certificate when requesting to uaa
+command: uaa-proxifier
