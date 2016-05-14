@@ -8,10 +8,9 @@ import (
 )
 
 type Prox struct {
-	target            *url.URL
-	proxy             *httputil.ReverseProxy
-	defaultTransport  http.RoundTripper
-	transportUserInfo http.RoundTripper
+	target    *url.URL
+	proxy     *httputil.ReverseProxy
+	transport http.RoundTripper
 }
 
 func NewCustomProxy(target string, skipInsecure bool) *Prox {
@@ -25,19 +24,13 @@ func NewCustomProxy(target string, skipInsecure bool) *Prox {
 		RoundTripper: defTr,
 	}
 	proxy := httputil.NewSingleHostReverseProxy(url)
-	proxy.Transport = defTr
-	return &Prox{target: url, proxy: proxy, defaultTransport: defTr, transportUserInfo: alterTr}
+	proxy.Transport = alterTr
+	return &Prox{target: url, proxy: proxy, transport: alterTr}
 }
 
 func (p *Prox) handle(w http.ResponseWriter, r *http.Request) {
 	r.Host = p.target.Host
 	r.Header.Del("X-Forwarded-Proto")
-	if r.URL.Path != "/userinfo" {
-		p.proxy.Transport = p.defaultTransport
-		p.proxy.ServeHTTP(w, r)
-		return
-	}
-	p.proxy.Transport = p.transportUserInfo
 	p.proxy.ServeHTTP(w, r)
 }
 

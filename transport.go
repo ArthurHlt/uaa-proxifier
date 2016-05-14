@@ -17,11 +17,15 @@ type TransportUserInfo struct {
 
 func (t *TransportUserInfo) RoundTrip(req *http.Request) (resp *http.Response, err error) {
 	resp, err = t.RoundTripper.RoundTrip(req)
+	var uaaUser UserFromUaa
+	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	var uaaUser UserFromUaa
-	b, err := ioutil.ReadAll(resp.Body)
+	if req.URL.Path != "/userinfo" {
+		t.loadResponse(b, resp)
+		return resp, err
+	}
 
 	if err != nil {
 		return nil, err
